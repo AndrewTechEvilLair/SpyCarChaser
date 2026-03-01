@@ -1,5 +1,4 @@
-
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -109,7 +108,7 @@
       🔴 HOLD FIRE TO SHOOT<br>
       ⚡ NITRO BOOST TO DODGE<br>
       📦 COLLECT WEAPON VAN DROPS<br>
-      🌊 ROAD TURNS TO RIVER AT 5000 PTS
+      🚨 SPEED INCREASES EVERY 3000 PTS
     </div>
     <button class="start-btn" id="startBtn">INSERT COIN</button>
     <div class="key-hint">KEYS: ARROWS · SPACE · O · M · S · N=NITRO</div>
@@ -152,21 +151,35 @@ setTimeout(resizeLayout,80);
 //  CONSTANTS
 // ═══════════════════════════════════════════════════════════════
 const roadLeft=60,roadRight=260,roadWidth=200,laneW=roadWidth/3;
-const WATER_SCORE=5000; // score at which river starts
-const NIGHT_SCORE=10000;
+
+// Speed tiers — score thresholds that ramp up difficulty + change road look
+const SPEED_TIERS=[
+  {score:0,    base:3.0, label:null,           night:false},
+  {score:3000, base:3.8, label:'SPEED UP!',    night:false},
+  {score:7000, base:4.6, label:'FASTER!',      night:false},
+  {score:13000,base:5.4, label:'DANGER ZONE!', night:true },
+  {score:22000,base:6.2, label:'MAX VELOCITY!',night:true },
+];
+let lastTierIndex=0;
+let tierAnnounce=0; // countdown frames to show tier label
+
+function getCurrentTier(){
+  let t=SPEED_TIERS[0];
+  for(const tier of SPEED_TIERS){ if(score>=tier.score) t=tier; }
+  return t;
+}
+function isNightMode(){ return getCurrentTier().night; }
 
 // ═══════════════════════════════════════════════════════════════
 //  GAME STATE
 // ═══════════════════════════════════════════════════════════════
 let state='title',score=0,hiScore=0,lives=3;
 let gameSpeed=3,frameCount=0,invincible=0,autoFireTimer=0;
-let combo=1,comboTimer=0; // kill combo
-let nitro=100,nitroActive=false,nitroCooldown=0; // nitro boost
-let screenShake=0; // pixels of shake
-let zone='road'; // 'road' or 'water'
-let zoneTransition=0; // 0..60 transition animation
-let tireTracks=[]; // {x,y,age}
-let floatTexts=[]; // {x,y,text,color,age}
+let combo=1,comboTimer=0;
+let nitro=100,nitroActive=false,nitroCooldown=0;
+let screenShake=0;
+let tierAnnounce=0;
+let tireTracks=[],floatTexts=[];
 
 let trees=[],player={};
 let bullets=[],eBullets=[],oils=[],missiles=[],smokes=[];
@@ -261,7 +274,7 @@ document.getElementById('controls').addEventListener('touchmove',e=>e.preventDef
 function startGame(){
   state='playing';score=0;lives=3;gameSpeed=3;frameCount=0;invincible=0;autoFireTimer=0;
   combo=1;comboTimer=0;nitro=100;nitroActive=false;nitroCooldown=0;screenShake=0;
-  zone='road';zoneTransition=0;bossActive=false;
+  tierAnnounce=0;lastTierIndex=0;bossActive=false;
   player={x:W/2,y:H-90,w:22,h:38};
   bullets=[];eBullets=[];oils=[];missiles=[];smokes=[];tireTracks=[];floatTexts=[];
   enemies=[];powerups=[];explosions=[];bosses=[];
@@ -279,101 +292,68 @@ document.getElementById('restartBtn').addEventListener('click',startGame);
 });
 
 // ═══════════════════════════════════════════════════════════════
-//  ZONE
-// ═══════════════════════════════════════════════════════════════
-function getZoneProgress(){
-  // 0=full road, 1=full water
-  if(score<WATER_SCORE) return 0;
-  const t=(score-WATER_SCORE)/2000;
-  return Math.min(t,1);
-}
-
-// ═══════════════════════════════════════════════════════════════
 //  DRAWING
 // ═══════════════════════════════════════════════════════════════
 function drawRoad(){
-  const zp=getZoneProgress();
-  const isNight=score>=NIGHT_SCORE;
+  const isNight=isNightMode();
 
-  if(zp<1){
-    // Grass / shoulder
-    const grassColor=isNight?'#152815':'#2d6a2d';
-    const grassDark=isNight?'#0e1e0e':'#275a27';
-    ctx.fillStyle=grassColor; ctx.fillRect(0,0,W,H);
-    ctx.fillStyle=grassDark;
-    for(let i=0;i<18;i++){
-      ctx.fillRect(((i*79+frameCount*gameSpeed*0.7)%(roadLeft-6)),(i*97+frameCount)%H,3,2);
-      ctx.fillRect(W-roadLeft+((i*61+frameCount*gameSpeed*0.5)%(roadLeft-6)),(i*83+frameCount)%H,3,2);
-    }
-    // Road
-    const roadColor=isNight?'#2a2a2a':'#3d3d3d';
-    ctx.fillStyle=roadColor; ctx.fillRect(roadLeft,0,roadWidth,H);
-    // Rumble strips
-    const rh=18;
-    for(let y=(frameCount*gameSpeed)%(rh*2)-rh*2;y<H+rh;y+=rh*2){
-      ctx.fillStyle='#c02020'; ctx.fillRect(roadLeft,y,10,rh); ctx.fillRect(roadRight-10,y,10,rh);
-      ctx.fillStyle='#eee';    ctx.fillRect(roadLeft,y+rh,10,rh); ctx.fillRect(roadRight-10,y+rh,10,rh);
-    }
-    // Edge lines
-    ctx.strokeStyle='#ddd';ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(roadLeft+10,0);ctx.lineTo(roadLeft+10,H);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(roadRight-10,0);ctx.lineTo(roadRight-10,H);ctx.stroke();
-    // Lane dashes
-    ctx.strokeStyle='#ffff0055';ctx.lineWidth=2;
-    ctx.setLineDash([28,22]);ctx.lineDashOffset=-(frameCount*gameSpeed)%50;
-    ctx.beginPath();ctx.moveTo(roadLeft+laneW,0);ctx.lineTo(roadLeft+laneW,H);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(roadLeft+laneW*2,0);ctx.lineTo(roadLeft+laneW*2,H);ctx.stroke();
-    ctx.setLineDash([]);ctx.lineDashOffset=0;
-    // Night overlay
-    if(isNight){
-      ctx.fillStyle='rgba(0,0,30,0.45)';
-      ctx.fillRect(0,0,W,H);
-    }
+  // Grass / shoulder
+  const grassColor=isNight?'#152815':'#2d6a2d';
+  const grassDark=isNight?'#0e1e0e':'#275a27';
+  ctx.fillStyle=grassColor; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=grassDark;
+  for(let i=0;i<18;i++){
+    ctx.fillRect(((i*79+frameCount*gameSpeed*0.7)%(roadLeft-6)),(i*97+frameCount)%H,3,2);
+    ctx.fillRect(W-roadLeft+((i*61+frameCount*gameSpeed*0.5)%(roadLeft-6)),(i*83+frameCount)%H,3,2);
   }
-
-  if(zp>0){
-    // Water overlay
-    ctx.globalAlpha=Math.min(zp,1);
-    // River banks
-    ctx.fillStyle='#8B6914';ctx.fillRect(0,0,W,H);
-    ctx.fillStyle='#a07820';
-    for(let i=0;i<6;i++) ctx.fillRect(((i*51+frameCount)%(roadLeft)),i*100%H,4,30);
-    // Water
-    const t=frameCount*0.03;
-    for(let y=0;y<H;y+=6){
-      const wave=Math.sin(y*0.08+t)*4;
-      const r=Math.floor(20+wave*2),g=Math.floor(80+wave*3),b=Math.floor(160+wave*4);
-      ctx.fillStyle=`rgb(${r},${g},${b})`;
-      ctx.fillRect(roadLeft,y,roadWidth,6);
-    }
-    // Ripples
-    ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=1;
-    for(let i=0;i<8;i++){
-      const rx=roadLeft+20+((i*73+frameCount*0.8)%160);
-      const ry=(i*90+frameCount*gameSpeed*0.5)%H;
-      ctx.beginPath();ctx.ellipse(rx,ry,14,5,0,0,Math.PI*2);ctx.stroke();
-    }
-    ctx.globalAlpha=1;
-    if(zp>=1){
-      // Zone label flash at transition
-      if(zp<1.05){
-        ctx.fillStyle='#fff';ctx.font='bold 14px Orbitron';
-        ctx.textAlign='center';ctx.fillText('ENTERING RIVER ZONE',W/2,H/2);
-      }
-    }
+  // Road
+  const roadColor=isNight?'#2a2a2a':'#3d3d3d';
+  ctx.fillStyle=roadColor; ctx.fillRect(roadLeft,0,roadWidth,H);
+  // Rumble strips
+  const rh=18;
+  for(let y=(frameCount*gameSpeed)%(rh*2)-rh*2;y<H+rh;y+=rh*2){
+    ctx.fillStyle='#c02020'; ctx.fillRect(roadLeft,y,10,rh); ctx.fillRect(roadRight-10,y,10,rh);
+    ctx.fillStyle='#eee';    ctx.fillRect(roadLeft,y+rh,10,rh); ctx.fillRect(roadRight-10,y+rh,10,rh);
   }
+  // Edge lines
+  ctx.strokeStyle='#ddd';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(roadLeft+10,0);ctx.lineTo(roadLeft+10,H);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(roadRight-10,0);ctx.lineTo(roadRight-10,H);ctx.stroke();
+  // Lane dashes — faster = shorter gaps to feel the speed
+  ctx.strokeStyle='#ffff0055';ctx.lineWidth=2;
+  ctx.setLineDash([28,22]);ctx.lineDashOffset=-(frameCount*gameSpeed)%50;
+  ctx.beginPath();ctx.moveTo(roadLeft+laneW,0);ctx.lineTo(roadLeft+laneW,H);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(roadLeft+laneW*2,0);ctx.lineTo(roadLeft+laneW*2,H);ctx.stroke();
+  ctx.setLineDash([]);ctx.lineDashOffset=0;
 
-  // Night headlight cones
+  // Night overlay + headlights
   if(isNight){
-    const grad=ctx.createRadialGradient(player.x,player.y-20,4,player.x,player.y-20,120);
-    grad.addColorStop(0,'rgba(255,255,180,0.18)');
+    ctx.fillStyle='rgba(0,0,30,0.5)';ctx.fillRect(0,0,W,H);
+    const grad=ctx.createRadialGradient(player.x,player.y-20,4,player.x,player.y-20,130);
+    grad.addColorStop(0,'rgba(255,255,180,0.2)');
     grad.addColorStop(1,'rgba(255,255,180,0)');
     ctx.fillStyle=grad;
     ctx.beginPath();
     ctx.moveTo(player.x,player.y-20);
-    ctx.lineTo(player.x-50,player.y-140);
-    ctx.lineTo(player.x+50,player.y-140);
+    ctx.lineTo(player.x-55,player.y-150);
+    ctx.lineTo(player.x+55,player.y-150);
     ctx.closePath();ctx.fill();
+  }
+
+  // Speed tier announcement banner
+  if(tierAnnounce>0){
+    const tier=getCurrentTier();
+    const a=Math.min(1,tierAnnounce/20)*Math.min(1,(tierAnnounce)/20);
+    ctx.save();
+    ctx.globalAlpha=Math.min(1,tierAnnounce/20);
+    ctx.fillStyle='rgba(0,0,0,0.55)';ctx.fillRect(roadLeft,H/2-28,roadWidth,56);
+    ctx.strokeStyle='#ff0';ctx.lineWidth=2;ctx.strokeRect(roadLeft,H/2-28,roadWidth,56);
+    ctx.fillStyle='#ff0';ctx.font='bold 15px Orbitron';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(tier.label||'',roadLeft+roadWidth/2,H/2-8);
+    ctx.fillStyle='#fff';ctx.font='10px Share Tech Mono';
+    ctx.fillText('SPEED '+Math.floor(gameSpeed*38)+' MPH',roadLeft+roadWidth/2,H/2+12);
+    ctx.restore();
   }
 }
 
@@ -386,8 +366,7 @@ function drawTireTracks(){
 }
 
 function drawTrees(){
-  if(getZoneProgress()>=1) return; // no trees on water
-  const isNight=score>=NIGHT_SCORE;
+  const isNight=isNightMode();
   for(const t of trees){
     const bx=t.side==='left'?t.x:W-t.x;
     const by=((t.y+frameCount*gameSpeed*0.85)%(H+90))-45;
@@ -422,38 +401,13 @@ function drawCar(x,y,rc,bc,w,h,dir){
   }
 }
 
-function drawBoat(x,y,rc,bc,w,h,dir){
-  // Hull
-  ctx.fillStyle=bc;
-  ctx.beginPath();
-  ctx.moveTo(x-w/2,y+h/2);ctx.lineTo(x-w/2,y-h/4);
-  ctx.lineTo(x,y-h/2);ctx.lineTo(x+w/2,y-h/4);ctx.lineTo(x+w/2,y+h/2);ctx.closePath();ctx.fill();
-  ctx.fillStyle=rc;ctx.fillRect(x-w/2+4,y-h/4,w-8,h/2);
-  // Wake
-  if(dir===1){
-    ctx.strokeStyle='rgba(255,255,255,0.4)';ctx.lineWidth=1;
-    for(let i=1;i<=3;i++){
-      ctx.beginPath();ctx.moveTo(x-i*8,y+h/2+i*2);ctx.lineTo(x-i*3,y+h/2+i);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(x+i*8,y+h/2+i*2);ctx.lineTo(x+i*3,y+h/2+i);ctx.stroke();
-    }
-  }
-  // Light
-  if(dir===1){ctx.fillStyle='#ffff99';}else{ctx.fillStyle='#ff5555';}
-  ctx.fillRect(x-3,dir===1?y+h/2-4:y-h/2,6,4);
-}
-
 function drawPlayerCar(){
   if(invincible>0&&Math.floor(frameCount/4)%2===0) return;
-  const isWater=getZoneProgress()>=1;
-  if(isWater){
-    drawBoat(player.x,player.y,'#0d2a4f','#0f3460',player.w+6,player.h-4,1);
-  } else {
-    drawCar(player.x,player.y,'#0d2a4f','#091830',player.w,player.h,1);
-    ctx.fillStyle='#0ff';ctx.fillRect(player.x-player.w/2+6,player.y-player.h/2,player.w-12,3);
-    ctx.fillStyle='#999';
-    ctx.fillRect(player.x-player.w/2-3,player.y-player.h/2-5,3,9);
-    ctx.fillRect(player.x+player.w/2,player.y-player.h/2-5,3,9);
-  }
+  drawCar(player.x,player.y,'#0d2a4f','#091830',player.w,player.h,1);
+  ctx.fillStyle='#0ff';ctx.fillRect(player.x-player.w/2+6,player.y-player.h/2,player.w-12,3);
+  ctx.fillStyle='#999';
+  ctx.fillRect(player.x-player.w/2-3,player.y-player.h/2-5,3,9);
+  ctx.fillRect(player.x+player.w/2,player.y-player.h/2-5,3,9);
   // Nitro exhaust
   if(nitroActive){
     for(let i=0;i<3;i++){
@@ -467,11 +421,9 @@ function drawPlayerCar(){
 }
 
 function drawEnemy(e){
-  const isWater=getZoneProgress()>=1;
   const pal={
     sedan:['#bb2222','#882222'],tireslicer:['#cc5500','#883300'],
     roadlord:['#555','#2a2a2a'],helicopter:['#1e5c1e','#0e3e0e'],
-    patrol:['#224488','#112244']
   };
   const[c1,c2]=pal[e.type]||pal.sedan;
 
@@ -485,8 +437,6 @@ function drawEnemy(e){
     ctx.restore();
     ctx.strokeStyle='#666';ctx.lineWidth=1;
     ctx.beginPath();ctx.moveTo(e.x-12,e.y+8);ctx.lineTo(e.x+12,e.y+8);ctx.stroke();
-  } else if(e.type==='patrol'&&isWater){
-    drawBoat(e.x,e.y,c1,c2,e.w,e.h,-1);
   } else {
     drawCar(e.x,e.y,c1,c2,e.w,e.h,-1);
     if(e.type==='tireslicer'){
@@ -541,6 +491,11 @@ function drawBoss(b){
     ctx.fillRect(b.x+ox-4,b.y+22,8,8);
     ctx.fillRect(b.x+ox-4,b.y-30,8,8);
   });
+  // Hit flash
+  if(b.hitFlash>0){
+    ctx.fillStyle=`rgba(255,255,255,${b.hitFlash/8})`;
+    ctx.fillRect(b.x-30,b.y-26,60,52);
+  }
   // Muzzle flash
   if(b.shootFlash>0){
     ctx.fillStyle=`rgba(255,120,0,${b.shootFlash/5})`;
@@ -693,16 +648,12 @@ function activateNitro(){
 //  SPAWN
 // ═══════════════════════════════════════════════════════════════
 function spawnEnemy(){
-  const isWater=getZoneProgress()>=0.9;
-  const roadTypes=['sedan','sedan','sedan','tireslicer','roadlord','helicopter'];
-  const waterTypes=['patrol','patrol','helicopter'];
-  const pool=isWater?waterTypes:roadTypes;
-  const type=pool[Math.floor(Math.random()*pool.length)];
+  const types=['sedan','sedan','sedan','tireslicer','roadlord','helicopter'];
+  const type=types[Math.floor(Math.random()*types.length)];
   const li=Math.floor(Math.random()*3);
   const x=roadLeft+20+li*laneW+laneW/2;
   const isH=type==='helicopter';
-  const isPatrol=type==='patrol';
-  const canShoot=(type==='sedan'&&Math.random()<0.35)||(type==='helicopter')||(type==='patrol');
+  const canShoot=(type==='sedan'&&Math.random()<0.35)||(type==='helicopter');
   enemies.push({
     x,y:-55,
     w:isH?38:22,h:isH?22:38,
@@ -728,12 +679,12 @@ function checkBossSpawn(){
     bossActive=true;
     bosses.push({
       x:W/2,y:-60,w:60,h:52,
-      hp:40,maxHp:40,
+      hp:20,maxHp:20,
       speed:1.2,
-      shootTimer:80,shootFlash:0,
+      shootTimer:80,shootFlash:0,hitFlash:0,
       phase:0
     });
-    addFloatText(W/2,H/2,'⚠ BOSS INCOMING!','#f00');
+    addFloatText(W/2,H/2-40,'⚠ BOSS INCOMING!','#f00');
   }
 }
 
@@ -761,9 +712,17 @@ function killEnemy(e,pts){
 // ═══════════════════════════════════════════════════════════════
 function update(){
   frameCount++;
-  const isNight=score>=NIGHT_SCORE;
   const speedBoost=nitroActive?3.5:0;
-  gameSpeed=3+Math.min(score/5000,4.5)+speedBoost;
+  const tier=getCurrentTier();
+  gameSpeed=tier.base+Math.min((score-tier.score)/8000,1.2)+speedBoost;
+
+  // Speed tier announcement
+  const newTierIndex=SPEED_TIERS.filter(t=>score>=t.score).length-1;
+  if(newTierIndex>lastTierIndex){
+    lastTierIndex=newTierIndex;
+    if(SPEED_TIERS[newTierIndex].label) tierAnnounce=120;
+  }
+  if(tierAnnounce>0) tierAnnounce--;
 
   // Combo decay
   if(comboTimer>0){comboTimer--;}
@@ -794,7 +753,7 @@ function update(){
   if(invincible>0) invincible--;
 
   // Tire tracks
-  if(getZoneProgress()<0.5&&frameCount%6===0&&!nitroActive){
+  if(frameCount%6===0&&!nitroActive){
     tireTracks.push({x:player.x-7,y:player.y+player.h/2-4,age:0});
     tireTracks.push({x:player.x+7,y:player.y+player.h/2-4,age:0});
   }
@@ -837,7 +796,7 @@ function update(){
   // Move + AI for enemies
   for(const e of enemies){
     e.y+=gameSpeed-e.speed*0.3+1.6;
-    if(e.type==='helicopter'||e.type==='patrol'){
+    if(e.type==='helicopter'){
       e.x+=Math.sin(frameCount*0.025+e.y*0.01)*1.8;
     } else {
       if(frameCount%90===0&&Math.random()<0.35)
@@ -861,15 +820,13 @@ function update(){
   // Move + AI for bosses
   for(const b of bosses){
     b.y=Math.min(b.y+1.2,120);
-    // Zigzag
     b.x+=Math.sin(frameCount*0.02)*2.5;
     b.x=Math.max(roadLeft+b.w/2+10,Math.min(roadRight-b.w/2-10,b.x));
-    // Boss shoots spread
     b.shootTimer--;
     if(b.shootFlash>0) b.shootFlash--;
+    if(b.hitFlash>0) b.hitFlash--;
     if(b.shootTimer<=0){
       for(let i=-2;i<=2;i++){
-        const ang=Math.PI/2+i*0.2;
         eBullets.push({x:b.x+i*12,y:b.y+b.h/2,dx:Math.sin(i*0.3)*3,dy:6});
       }
       b.shootTimer=50;b.shootFlash=5;
@@ -890,7 +847,7 @@ function update(){
   // Player bullets → bosses
   for(const b of bullets) for(const bs of bosses){
     if(overlap(b.x,b.y,6,6,bs.x,bs.y,bs.w,bs.h)){
-      b.dead=true;bs.hp--;
+      b.dead=true;bs.hp--;bs.hitFlash=8;
       if(bs.hp<=0){
         bs.dead=true;
         addExplosion(bs.x,bs.y,true);addExplosion(bs.x-20,bs.y+10,true);addExplosion(bs.x+20,bs.y-10,true);
@@ -910,7 +867,7 @@ function update(){
     }
     for(const bs of bosses){
       if(overlap(m.x,m.y,10,10,bs.x,bs.y,bs.w,bs.h)){
-        m.dead=true;bs.hp-=5;
+        m.dead=true;bs.hp-=5;bs.hitFlash=8;
         if(bs.hp<=0){bs.dead=true;addExplosion(bs.x,bs.y,true);const earned=2000*combo;score+=earned;addFloatText(bs.x,bs.y,'BOSS! +'+earned,'#f00');bossActive=false;screenShake=16;}
       }
     }
@@ -1023,8 +980,9 @@ function updateUI(){
     ae.textContent=has?ammo[w]:'–';
   }
   document.getElementById('speedChip').textContent='SPD '+Math.floor(gameSpeed*35)+' MPH';
-  const zp=getZoneProgress();
-  document.getElementById('zoneChip').textContent=zp>=1?'🌊 RIVER':zp>0?'TRANSITION':'🛣 ROAD';
+  const ti=SPEED_TIERS.filter(t=>score>=t.score).length-1;
+  const tierNames=['STANDARD','PURSUIT','HOSTILE','NIGHT OPS','MAX VEL'];
+  document.getElementById('zoneChip').textContent=(isNightMode()?'🌙 ':'🛣 ')+(tierNames[ti]||'STANDARD');
   // Nitro button state
   const nb=document.getElementById('nitroBtn');
   if(nitroCooldown>0) nb.className='empty';
