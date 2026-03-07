@@ -37,6 +37,14 @@
   #nitroBtn{padding:5px 10px;border:1px solid #0ff6;background:#001616;color:#0ff;font-family:'Orbitron',monospace;font-size:8px;font-weight:700;letter-spacing:1px;border-radius:4px;cursor:pointer;-webkit-appearance:none;transition:background 0.07s;}
   #nitroBtn.active{background:#0ff3;border-color:#0ff;box-shadow:0 0 10px #0ff6;}
   #nitroBtn.empty{border-color:#222;color:#333;background:#050505;}
+  #homeBtn{padding:5px 8px;border:1px solid #555;background:#0a0a0a;color:#777;font-size:13px;border-radius:4px;cursor:pointer;-webkit-appearance:none;transition:all 0.1s;line-height:1;}
+  #homeBtn:active{background:#1a1a1a;color:#aaa;border-color:#888;}
+  #restartBtn{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0;width:210px;height:74px;border:none;cursor:pointer;-webkit-appearance:none;outline:none;border-radius:5px;background:linear-gradient(180deg,#2e2e2e 0%,#1c1c1c 35%,#0e0e0e 65%,#1a1a1a 100%);animation:coinPulse 2s ease-in-out infinite;}
+  #restartBtn::before{content:'';position:absolute;top:10px;left:50%;transform:translateX(-50%);width:110px;height:13px;border-radius:2px;background:linear-gradient(180deg,#0a0a0a,#141414);box-shadow:inset 0 3px 5px #000,inset 0 0 0 1px #2a2a2a,0 1px 0 #3a3a3a;}
+  #restartBtn .coin-label{margin-top:22px;font-family:'Orbitron',monospace;font-size:clamp(9px,2.5vw,11px);font-weight:700;letter-spacing:4px;background:linear-gradient(180deg,#fff 0%,#d0d8f0 40%,#9098b8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-transform:uppercase;}
+  #restartBtn .coin-sub{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;color:#b0b8d0;text-transform:uppercase;}
+  #restartBtn:active{transform:translateY(4px);box-shadow:0 0 0 2px #4a4a4a,0 0 0 4px #111,0 1px 0 5px #000,inset 0 3px 6px #000;}
+  #restartBtn:hover .coin-label{background:linear-gradient(180deg,#fff,#c0c8e0,#8090b0);-webkit-background-clip:text;background-clip:text;}
   #rightControls{display:flex;flex-direction:row;align-items:center;gap:8px;}
   #weaponCol{display:flex;flex-direction:column;gap:4px;}
   .wbtn{width:46px;height:32px;border-radius:7px;border:2px solid #0ff4;background:#001616;color:#0ffa;font-family:'Orbitron',monospace;font-size:7px;font-weight:700;letter-spacing:.5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;-webkit-appearance:none;transition:background 0.07s;}
@@ -46,17 +54,33 @@
   .wbtn.pressed{background:#0ff2;box-shadow:0 0 14px #0ff5;}
   #fireBtn{width:74px;height:74px;border-radius:50%;border:3px solid #ff0;background:#181200;color:#ff0;font-family:'Orbitron',monospace;font-size:12px;font-weight:900;letter-spacing:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px #ff03,inset 0 0 8px #ff01;flex-shrink:0;-webkit-appearance:none;transition:background 0.07s,box-shadow 0.07s;}
   #fireBtn.pressed{background:#2a2000;box-shadow:0 0 28px #ff07,inset 0 0 16px #ff03;}
-  .overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000d;z-index:30;padding:20px;text-align:center;}
-  #titleScreen h1{font-size:clamp(26px,8vw,52px);font-weight:900;letter-spacing:6px;color:#fff;text-shadow:0 0 20px #0ff,0 0 50px #0ff6;margin-bottom:5px;}
-  .subtitle{font-size:clamp(9px,2.4vw,12px);letter-spacing:4px;color:#0ff8;margin-bottom:22px;}
-  .instructions{font-size:clamp(11px,2.8vw,13px);color:#0ff7;font-family:'Share Tech Mono',monospace;line-height:2;margin-bottom:22px;}
-  #gameOver h2{font-size:clamp(26px,8vw,44px);color:#f00;text-shadow:0 0 20px #f005;letter-spacing:6px;margin-bottom:12px;}
-  .final-score{font-size:clamp(14px,4vw,19px);color:#ff0;font-family:'Share Tech Mono',monospace;margin-bottom:5px;}
-  .hi-line{font-size:clamp(11px,3vw,13px);color:#0ff8;font-family:'Share Tech Mono',monospace;margin-bottom:22px;}
-  .start-btn{padding:13px 38px;border:2px solid #0ff;background:transparent;color:#0ff;font-family:'Orbitron',monospace;font-size:clamp(11px,3.2vw,14px);letter-spacing:3px;cursor:pointer;text-transform:uppercase;box-shadow:0 0 18px #0ff4;-webkit-appearance:none;}
+  .overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:30;padding:20px;text-align:center;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.2) 0px,rgba(0,0,0,0.2) 1px,transparent 1px,transparent 3px),radial-gradient(ellipse at 50% 38%,#071407 0%,#000 100%);}
+  #titleScreen h1{font-size:clamp(32px,9vw,64px);font-weight:900;letter-spacing:8px;margin-bottom:4px;line-height:1;background:linear-gradient(180deg,#fff 0%,#e8e8e8 12%,#a0a0b0 26%,#e0e0f0 40%,#707080 52%,#c0c0d0 64%,#404050 76%,#9090a0 88%,#202028 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 3px 0 #000) drop-shadow(0 0 22px rgba(160,160,220,0.6));}
+  #titleScreen h1 .ver{font-size:0.22em;font-weight:400;letter-spacing:3px;vertical-align:middle;background:linear-gradient(180deg,#999,#555);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:none;}
+  .subtitle{font-size:clamp(8px,2.2vw,11px);letter-spacing:6px;margin-bottom:8px;color:#606070;text-transform:uppercase;font-family:'Orbitron',monospace;}
+  .title-rule{width:260px;height:2px;margin:0 auto 18px;background:linear-gradient(90deg,transparent,#707088,#d0d0e8,#707088,transparent);box-shadow:0 0 8px #8080b066;}
+  .instructions{font-size:clamp(10px,2.6vw,12px);color:#7a9a7a;font-family:'Share Tech Mono',monospace;line-height:2.1;margin-bottom:24px;}
+  #gameOver h2{font-size:clamp(28px,9vw,52px);font-weight:900;letter-spacing:6px;margin-bottom:14px;background:linear-gradient(180deg,#ff9999 0%,#ff2222 45%,#880000 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 2px 0 #000) drop-shadow(0 0 20px rgba(255,0,0,0.45));}
+  .final-score{font-size:clamp(14px,4vw,19px);font-family:'Share Tech Mono',monospace;margin-bottom:5px;background:linear-gradient(180deg,#fff 0%,#d0d8f0 50%,#9098b8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .hi-line{font-size:clamp(11px,3vw,13px);font-family:'Share Tech Mono',monospace;margin-bottom:26px;color:#606070;}
+  @keyframes coinPulse{0%,100%{box-shadow:0 0 0 2px #4a4a4a,0 0 0 4px #111,0 5px 0 5px #000,0 0 18px rgba(160,180,255,0.3),0 0 40px rgba(160,180,255,0.1),inset 0 1px 0 #555;}50%{box-shadow:0 0 0 2px #6060a0,0 0 0 4px #222,0 5px 0 5px #000,0 0 32px rgba(160,180,255,0.75),0 0 70px rgba(160,180,255,0.3),inset 0 1px 0 #888;}}
+  #startBtn{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0;width:210px;height:74px;border:none;cursor:pointer;-webkit-appearance:none;outline:none;border-radius:5px;background:linear-gradient(180deg,#2e2e2e 0%,#1c1c1c 35%,#0e0e0e 65%,#1a1a1a 100%);animation:coinPulse 2s ease-in-out infinite;}
+  #startBtn::before{content:'';position:absolute;top:10px;left:50%;transform:translateX(-50%);width:110px;height:13px;border-radius:2px;background:linear-gradient(180deg,#0a0a0a,#141414);box-shadow:inset 0 3px 5px #000,inset 0 0 0 1px #2a2a2a,0 1px 0 #3a3a3a;}
+  #startBtn .coin-label{margin-top:22px;font-family:'Orbitron',monospace;font-size:clamp(9px,2.5vw,11px);font-weight:700;letter-spacing:4px;background:linear-gradient(180deg,#fff 0%,#d0d8f0 40%,#9098b8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-transform:uppercase;}
+  #startBtn .coin-sub{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;color:#b0b8d0;text-transform:uppercase;}
+  #startBtn:active{transform:translateY(4px);box-shadow:0 0 0 2px #4a4a4a,0 0 0 4px #111,0 1px 0 5px #000,inset 0 3px 6px #000;}
+  #startBtn:hover .coin-label{background:linear-gradient(180deg,#fff,#c0c8e0,#8090b0);-webkit-background-clip:text;background-clip:text;}
+  .start-btn{padding:13px 38px;border:2px solid #0ff;background:transparent;color:#0ff;font-family:'Orbitron',monospace;font-size:clamp(11px,3.2vw,14px);letter-spacing:3px;cursor:pointer;text-transform:uppercase;box-shadow:0 0 18px #0ff4;-webkit-appearance:none;border-radius:0;}
   .start-btn:active{background:#0ff2;}
-  .key-hint{margin-top:10px;font-size:10px;color:#0ff3;font-family:'Share Tech Mono',monospace;}
+  .go-btns{display:flex;gap:10px;margin-top:14px;align-items:center;justify-content:center;}
+  .go-secondary{padding:8px 18px;border:1px solid #444;background:#0a0a0a;color:#888;font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:2px;border-radius:4px;cursor:pointer;-webkit-appearance:none;text-decoration:none;display:flex;align-items:center;gap:5px;transition:all 0.1s;text-transform:uppercase;}
+  .go-secondary:hover{border-color:#888;color:#ccc;background:#181818;}
+  .go-secondary:active{transform:translateY(2px);}
+  .bmc-btn-title{border-color:#554400;color:#c8a030;}
+  .bmc-btn-title:hover{border-color:#c8a030;color:#ffe080;background:#181200;}
+  .key-hint{margin-top:14px;font-size:9px;color:#0ff2;font-family:'Share Tech Mono',monospace;letter-spacing:2px;}
 </style>
+<script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="AndrewTech" data-color="#FFDD00" data-emoji="" data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff"></script>
 </head>
 <body>
 <div id="app">
@@ -88,7 +112,10 @@
     <div id="statusArea">
       <div class="chip" id="speedChip">SPD 0 MPH</div>
       <div class="chip" id="zoneChip">ROAD</div>
-      <button id="nitroBtn">⚡ NITRO</button>
+      <div style="display:flex;gap:5px;align-items:center;">
+        <button id="nitroBtn">⚡ NITRO</button>
+        <button id="homeBtn">⌂</button>
+      </div>
     </div>
     <div id="rightControls">
       <button id="fireBtn">FIRE</button>
@@ -101,8 +128,9 @@
   </div>
 
   <div class="overlay" id="titleScreen">
-    <h1>ROAD AGENT <span style="font-size:0.25em;color:#0ff5;font-weight:400;letter-spacing:3px;vertical-align:middle;">v1.0</span></h1>
+    <h1>ROAD AGENT <span class="ver">v2.1</span></h1>
     <div class="subtitle">CLASSIFIED OPERATIVE</div>
+    <div class="title-rule"></div>
     <div class="instructions">
       🕹 JOYSTICK / ARROWS TO STEER<br>
       🔴 HOLD FIRE TO SHOOT<br>
@@ -110,15 +138,24 @@
       📦 COLLECT WEAPON VAN DROPS<br>
       🚨 SPEED INCREASES EVERY 3000 PTS
     </div>
-    <button class="start-btn" id="startBtn">INSERT COIN</button>
+    <button id="startBtn"><span class="coin-label">INSERT COIN</span><span class="coin-sub">&#x25C6; 1 CREDIT &#x25C6;</span></button>
+    <div class="go-btns" style="margin-top:14px;">
+      <a class="go-secondary" href="https://andrewtechevillair.github.io/EvilLair/" target="_blank">&#x2302; EVIL LAIR</a>
+      <a class="go-secondary bmc-btn-title" href="https://www.buymeacoffee.com/AndrewTech" target="_blank">☕ BUY ME A COFFEE</a>
+    </div>
     <div class="key-hint">KEYS: ARROWS · SPACE · O · M · S · N=NITRO</div>
   </div>
 
   <div class="overlay" id="gameOver" style="display:none">
     <h2>GAME OVER</h2>
+    <div class="title-rule"></div>
     <div class="final-score">SCORE: <span id="finalScore">0</span></div>
     <div class="hi-line" id="hiLine"></div>
-    <button class="start-btn" id="restartBtn">PLAY AGAIN</button>
+    <button id="restartBtn"><span class="coin-label">PLAY AGAIN</span><span class="coin-sub">&#x25C6; INSERT COIN &#x25C6;</span></button>
+    <div class="go-btns">
+      <button class="go-secondary" id="goHomeBtn">⌂ TITLE</button>
+      <a class="go-secondary" href="https://andrewtechevillair.github.io/EvilLair/" target="_blank">&#x2302; EVIL LAIR</a>
+    </div>
   </div>
 </div>
 
@@ -154,11 +191,16 @@ const roadLeft=60,roadRight=260,roadWidth=200,laneW=roadWidth/3;
 
 // Speed tiers — score thresholds that ramp up difficulty + change road look
 const SPEED_TIERS=[
-  {score:0,    base:3.0, label:null,           night:false},
-  {score:3000, base:3.8, label:'SPEED UP!',    night:false},
-  {score:7000, base:4.6, label:'FASTER!',      night:false},
-  {score:13000,base:5.4, label:'DANGER ZONE!', night:true },
-  {score:22000,base:6.2, label:'MAX VELOCITY!',night:true },
+  {score:0,     base:3.0, label:null,              night:false},
+  {score:3000,  base:3.8, label:'SPEED UP!',       night:false},
+  {score:7000,  base:4.6, label:'FASTER!',         night:false},
+  {score:13000, base:5.4, label:'DANGER ZONE!',    night:true },
+  {score:22000, base:6.2, label:'MAX VELOCITY!',   night:true },
+  {score:35000, base:7.0, label:'RECKLESS!',       night:true },
+  {score:52000, base:7.8, label:'INSANE!',         night:true },
+  {score:75000, base:8.6, label:'SUICIDAL!',       night:true },
+  {score:105000,base:9.4, label:'BEYOND LIMIT!',   night:true },
+  {score:145000,base:10.2,label:'IMPOSSIBLE!',     night:true },
 ];
 let lastTierIndex=0;
 let tierAnnounce=0; // countdown frames to show tier label
@@ -175,10 +217,10 @@ function isNightMode(){ return getCurrentTier().night; }
 // ═══════════════════════════════════════════════════════════════
 let state='title',score=0,hiScore=0,lives=3;
 let gameSpeed=3,frameCount=0,invincible=0,autoFireTimer=0;
+let lastSpaceTime=0,lastFireTapTime=0; // double-tap missile (ms timestamps)
 let combo=1,comboTimer=0;
 let nitro=100,nitroActive=false,nitroCooldown=0;
 let screenShake=0;
-let tierAnnounce=0;
 let tireTracks=[],floatTexts=[];
 
 let trees=[],player={};
@@ -203,7 +245,17 @@ const keys={};
 document.addEventListener('keydown',e=>{
   keys[e.code]=true;
   if(state!=='playing') return;
-  if(e.code==='Space'){fireBullet();e.preventDefault();}
+  if(e.code==='Space'){
+    const now=performance.now();
+    if(now-lastSpaceTime<300&&weapons.missiles&&ammo.missiles>0){
+      fireMissile();
+      lastSpaceTime=0;
+    } else {
+      fireBullet();
+      lastSpaceTime=now;
+    }
+    e.preventDefault();
+  }
   if(e.code==='KeyO') fireOil();
   if(e.code==='KeyM') fireMissile();
   if(e.code==='KeyS') fireSmoke();
@@ -261,7 +313,18 @@ function touchBtn(el,onDown,onUp){
   el.addEventListener('mouseup',()=>{el.classList.remove('pressed');if(onUp)onUp();});
 }
 
-touchBtn(fireBtn,()=>{fireTouchActive=true;fireBullet();},()=>{fireTouchActive=false;});
+touchBtn(fireBtn,()=>{
+  const now=performance.now();
+  if(now-lastFireTapTime<300&&weapons.missiles&&ammo.missiles>0){
+    fireMissile();
+    lastFireTapTime=0;
+    fireTouchActive=false;
+  } else {
+    fireTouchActive=true;
+    fireBullet();
+    lastFireTapTime=now;
+  }
+},()=>{fireTouchActive=false;});
 touchBtn(document.getElementById('btn-oil'),()=>fireOil());
 touchBtn(document.getElementById('btn-missiles'),()=>fireMissile());
 touchBtn(document.getElementById('btn-smoke'),()=>fireSmoke());
@@ -273,6 +336,7 @@ document.getElementById('controls').addEventListener('touchmove',e=>e.preventDef
 // ═══════════════════════════════════════════════════════════════
 function startGame(){
   state='playing';score=0;lives=3;gameSpeed=3;frameCount=0;invincible=0;autoFireTimer=0;
+  lastSpaceTime=0;lastFireTapTime=0;
   combo=1;comboTimer=0;nitro=100;nitroActive=false;nitroCooldown=0;screenShake=0;
   tierAnnounce=0;lastTierIndex=0;bossActive=false;
   player={x:W/2,y:H-90,w:22,h:38};
@@ -287,8 +351,25 @@ function startGame(){
 }
 document.getElementById('startBtn').addEventListener('click',startGame);
 document.getElementById('restartBtn').addEventListener('click',startGame);
+function goHome(){
+  state='title';
+  document.getElementById('titleScreen').style.display='flex';
+  document.getElementById('gameOver').style.display='none';
+  resetJoy(); fireTouchActive=false;
+}
+const homeBtn=document.getElementById('homeBtn');
+homeBtn.addEventListener('click',goHome);
+homeBtn.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();goHome();},{passive:false});
+homeBtn.addEventListener('touchend',e=>{e.preventDefault();e.stopPropagation();},{passive:false});
+
+const goHomeBtn=document.getElementById('goHomeBtn');
+goHomeBtn.addEventListener('click',goHome);
+goHomeBtn.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();goHome();},{passive:false});
+goHomeBtn.addEventListener('touchend',e=>{e.preventDefault();e.stopPropagation();},{passive:false});
 ['startBtn','restartBtn'].forEach(id=>{
-  document.getElementById(id).addEventListener('touchend',e=>{e.preventDefault();startGame();},{passive:false});
+  const el=document.getElementById(id);
+  el.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();startGame();},{passive:false});
+  el.addEventListener('touchend',e=>{e.preventDefault();e.stopPropagation();},{passive:false});
 });
 
 // ═══════════════════════════════════════════════════════════════
@@ -675,16 +756,20 @@ function spawnPowerup(){
 
 function checkBossSpawn(){
   if(bossActive) return;
-  if(score>0&&score%8000<50&&frameCount>120){
+  if(score<15000) return;
+  const bossScore=score-15000;
+  if(bossScore%10000<50&&frameCount>120){
     bossActive=true;
+    const wave=Math.floor(bossScore/10000)+1;
+    const hp=10+wave*5;
     bosses.push({
       x:W/2,y:-60,w:60,h:52,
-      hp:20,maxHp:20,
-      speed:1.2,
-      shootTimer:80,shootFlash:0,hitFlash:0,
-      phase:0
+      hp,maxHp:hp,
+      speed:1.2+wave*0.1,
+      shootTimer:Math.max(30,80-wave*5),shootFlash:0,hitFlash:0,
+      phase:0,wave
     });
-    addFloatText(W/2,H/2-40,'⚠ BOSS INCOMING!','#f00');
+    addFloatText(W/2,H/2-40,wave>=5?'⚠ ELITE BOSS!':'⚠ BOSS INCOMING!','#f00');
   }
 }
 
